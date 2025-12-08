@@ -2,14 +2,21 @@ package com.codefortress.web.controller;
 
 import com.codefortress.core.model.CodeFortressUser;
 import com.codefortress.core.service.JwtService;
+import com.codefortress.core.service.PasswordValidator;
 import com.codefortress.core.spi.CodeFortressUserProvider;
+import com.codefortress.web.dto.ErrorResponse;
 import com.codefortress.web.dto.LoginRequest;
 import com.codefortress.web.dto.RegisterRequest;
 import com.codefortress.web.dto.TokenResponse;
 import com.codefortress.core.event.CodeFortressUserCreatedEvent; // Importar evento
 import org.springframework.context.ApplicationEventPublisher;
+import com.codefortress.web.service.RateLimitService;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.ConsumptionProbe;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 
 @RestController
@@ -31,9 +39,26 @@ public class AuthController {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
+    private final PasswordValidator passwordValidator;
+    private final RateLimitService rateLimitService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        // 1. Obtener IP del cliente
+        String ip = httpRequest.getRemoteAddr();
+
+        // 2. Verificar Rate Limit
+        Bucket bucket = rateLimitService.resolveBucket(ip);
+        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+
+        if (!probe.isConsumed()) {
+            // 429 Too Many Requests
+            long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(new ErrorResponse(429, "Too Many Requests",
+                            "Has excedido los intentos de login. Intenta en " + waitForRefill + " segundos.",
+                            LocalDateTime.now()));
+        }
         // 1. Delegamos la autenticación a Spring Security (que usará nuestro UserDetailsService configurado en Fase 5)
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password())
@@ -52,7 +77,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<CodeFortressUser> register(@RequestBody RegisterRequest request) {
-        // 1. Hasheamos la contraseña ANTES de pasarla al provider/base de datos
+        passwordValidator.validate(request.password());
         String encodedPassword = passwordEncoder.encode(request.password());
 
         // 2. Creamos el modelo agnóstico

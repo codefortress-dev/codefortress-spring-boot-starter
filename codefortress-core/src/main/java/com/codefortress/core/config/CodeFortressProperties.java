@@ -14,6 +14,7 @@ public class CodeFortressProperties {
     private Security security = new Security();
     private Api api = new Api();
     private Cors cors = new Cors();
+    private Password password = new Password();
 
     @Data
     public static class Security {
@@ -43,5 +44,13 @@ public class CodeFortressProperties {
     public static class RouteRule {
         private String pattern; // Ej: "/api/admin/**"
         private List<String> roles; // Ej: ["ADMIN", "MANAGER"] o ["PUBLIC"]
+    }
+    @Data
+    public static class Password {
+        private int minLength = 8;
+        private boolean requireUppercase = true;
+        private boolean requireLowercase = true;
+        private boolean requireNumbers = true;
+        private boolean requireSpecialChar = false;
     }
 }
