@@ -2,9 +2,9 @@ package com.codefortress.core.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -13,6 +13,7 @@ public class CodeFortressProperties {
 
     private Security security = new Security();
     private Api api = new Api();
+    private Cors cors = new Cors();
 
     @Data
     public static class Security {
@@ -21,6 +22,15 @@ public class CodeFortressProperties {
 
         // Lista de reglas de rutas
         private List<RouteRule> routes = new ArrayList<>();
+    }
+
+    @Data
+    public static class Cors {
+        private boolean enabled = false; // Desactivado por defecto por seguridad
+        private List<String> allowedOrigins = Collections.singletonList("*"); // Ojo con esto en prod
+        private List<String> allowedMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS");
+        private List<String> allowedHeaders = Collections.singletonList("*");
+        private boolean allowCredentials = true;
     }
 
     @Data

@@ -6,6 +6,8 @@ import com.codefortress.core.spi.CodeFortressUserProvider;
 import com.codefortress.web.dto.LoginRequest;
 import com.codefortress.web.dto.RegisterRequest;
 import com.codefortress.web.dto.TokenResponse;
+import com.codefortress.core.event.CodeFortressUserCreatedEvent; // Importar evento
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ public class AuthController {
     private final CodeFortressUserProvider userProvider;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
@@ -60,7 +63,12 @@ public class AuthController {
                 true // Enabled por defecto
         );
 
-        // 3. Guardamos usando la interfaz (sin saber si es JPA, Mongo o Memoria)
-        return ResponseEntity.ok(userProvider.save(newUser));
+        CodeFortressUser savedUser = userProvider.save(newUser);
+
+
+        // Esto es asíncrono/desacoplado por defecto en la lógica del negocio
+        eventPublisher.publishEvent(new CodeFortressUserCreatedEvent(savedUser));
+
+        return ResponseEntity.ok(savedUser);
     }
 }

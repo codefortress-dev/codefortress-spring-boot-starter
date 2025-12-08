@@ -29,3 +29,9 @@ codefortress:
     api:
       enabled: true
       auth-path: "/auth"
+
+    cors:
+      enabled: true
+      allowed-origins:
+        - "http://localhost:3000" # Simulamos un Frontend React
+        - "http://localhost:4200"

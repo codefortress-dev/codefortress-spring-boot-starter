@@ -1,5 +1,6 @@
 package com.codefortress.jpa.adapter;
 
+import com.codefortress.core.exception.UserAlreadyExistsException;
 import com.codefortress.core.model.CodeFortressUser;
 import com.codefortress.core.spi.CodeFortressUserProvider;
 import com.codefortress.jpa.entity.SecurityRoleEntity;
@@ -31,6 +32,11 @@ public class JpaUserProvider implements CodeFortressUserProvider {
     @Override
     @Transactional
     public CodeFortressUser save(CodeFortressUser user) {
+        // VALIDACIÓN
+        if (userRepository.findByUsername(user.username()).isPresent()) {
+            throw new UserAlreadyExistsException(user.username());
+        }
+
         SecurityUserEntity entity = new SecurityUserEntity();
         entity.setUsername(user.username());
         entity.setPassword(user.password());

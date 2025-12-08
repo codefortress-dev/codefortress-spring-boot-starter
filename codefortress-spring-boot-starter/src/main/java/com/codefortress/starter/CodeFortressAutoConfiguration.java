@@ -5,6 +5,7 @@ import com.codefortress.core.security.CodeFortressUserDetails;
 import com.codefortress.core.spi.CodeFortressUserProvider;
 import com.codefortress.jpa.adapter.JpaUserProvider;
 import com.codefortress.jpa.repository.SecurityUserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -21,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.codefortress.starter.config.JwtAuthenticationEntryPoint;
 
 @Configuration
 @EnableConfigurationProperties(CodeFortressProperties.class)
@@ -33,6 +35,12 @@ public class CodeFortressAutoConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
+        // Le pasamos el mapper de Spring al constructor
+        return new JwtAuthenticationEntryPoint(objectMapper);
     }
 
     @Bean
