@@ -21,6 +21,8 @@
         <module>codefortress-jpa-adapter</module>
         <module>codefortress-web</module>
         <module>codefortress-spring-boot-starter</module>
+        <!-- Modulos de pruebas para test Caja negra-->
+        <module>codefortress-demo</module>
     </modules>
 
     <properties>

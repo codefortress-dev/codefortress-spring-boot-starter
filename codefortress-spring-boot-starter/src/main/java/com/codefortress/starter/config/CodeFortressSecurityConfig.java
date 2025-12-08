@@ -28,11 +28,12 @@ public class CodeFortressSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
-                    // 1. Permitir rutas de login configuradas
-                    auth.requestMatchers(properties.getUi().getLoginPath()).permitAll();
-                    auth.requestMatchers("/auth/**").permitAll(); // Fallback
+                    // 1. Permitir rutas de la API (Login/Register) dinámicamente
+                    // Leemos la ruta configurada (ej: "/auth") y permitimos todo lo que cuelgue de ella ("/**")
+                    String authBase = properties.getApi().getAuthPath();
+                    auth.requestMatchers(authBase + "/**").permitAll();
 
-                    // 2. Aplicar reglas dinámicas desde application.yml
+                    // 2. Aplicar reglas dinámicas de rutas (desde application.yml)
                     properties.getSecurity().getRoutes().forEach(rule -> {
                         if (rule.getRoles().contains("PUBLIC")) {
                             auth.requestMatchers(rule.getPattern()).permitAll();

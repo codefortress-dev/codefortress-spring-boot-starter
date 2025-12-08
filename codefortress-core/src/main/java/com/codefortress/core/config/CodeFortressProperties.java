@@ -12,7 +12,7 @@ import java.util.List;
 public class CodeFortressProperties {
 
     private Security security = new Security();
-    private Ui ui = new Ui();
+    private Api api = new Api();
 
     @Data
     public static class Security {
@@ -24,9 +24,9 @@ public class CodeFortressProperties {
     }
 
     @Data
-    public static class Ui {
+    public static class Api {
         private boolean enabled = true; // Por defecto UI activada
-        private String loginPath = "/auth/login";
+        private String authPath = "/auth";
     }
 
     @Data

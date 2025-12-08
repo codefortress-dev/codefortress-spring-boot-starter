@@ -21,9 +21,11 @@ codefortress:
     jwt-secret: "Q29kZUZvcnRyZXNzU2VjcmV0S2V5Rm9yRGVtb0FwcDIwMjVWZXJpZnkhIQ==" # Mínimo 256 bits
     routes:
       - pattern: "/api/public/**"
-        roles: ["PUBLIC"]
+        roles: [ "PUBLIC" ]
       - pattern: "/api/private/**"
-        roles: ["ADMIN"] # Solo ADMIN puede entrar aquí
-  ui:
-    enabled: true # Habilita endpoints de login/register
-    login-path: "/auth"
+        roles: [ "ADMIN" ]
+
+      # CAMBIO: api
+    api:
+      enabled: true
+      auth-path: "/auth"

@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashSet;
 
 @RestController
-@RequestMapping("${codefortress.ui.login-path:/auth}") // Ruta configurable, default /auth
+@RequestMapping("${codefortress.api.auth-path:/auth}") // Ruta configurable, default /auth
 @RequiredArgsConstructor
 // FEATURE TOGGLE: Si el usuario pone 'false', este controlador desaparece.
-@ConditionalOnProperty(prefix = "codefortress.ui", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "codefortress.api", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
