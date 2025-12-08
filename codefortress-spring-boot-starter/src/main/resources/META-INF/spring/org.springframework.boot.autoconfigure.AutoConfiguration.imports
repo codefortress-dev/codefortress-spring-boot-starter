@@ -1,0 +1,3 @@
+com.codefortress.starter.CodeFortressAutoConfiguration
+com.codefortress.starter.config.CodeFortressSecurityConfig
+com.codefortress.starter.filter.JwtAuthenticationFilter
