@@ -1,4 +1,22 @@
 package com.codefortress.starter.audit;
 
-public class LoggerAuditProvider {
+import com.codefortress.core.audit.AuditRecord;
+import com.codefortress.core.audit.CodeFortressAuditProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class LoggerAuditProvider implements CodeFortressAuditProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(LoggerAuditProvider.class);
+
+    @Override
+    public void log(AuditRecord record) {
+        // Formato: [AUDIT] [ACTION] User: ... Details: ...
+        log.info("[AUDIT] [{}] User: {} | Time: {} | Details: {}",
+                record.action(),
+                record.principal(),
+                record.timestamp(),
+                record.details()
+        );
+    }
 }

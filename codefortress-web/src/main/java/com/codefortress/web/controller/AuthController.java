@@ -1,13 +1,13 @@
 package com.codefortress.web.controller;
 
+import com.codefortress.core.config.CodeFortressProperties;
+import com.codefortress.core.model.CodeFortressRefreshToken;
 import com.codefortress.core.model.CodeFortressUser;
 import com.codefortress.core.service.JwtService;
 import com.codefortress.core.service.PasswordValidator;
+import com.codefortress.core.service.RefreshTokenService;
 import com.codefortress.core.spi.CodeFortressUserProvider;
-import com.codefortress.web.dto.ErrorResponse;
-import com.codefortress.web.dto.LoginRequest;
-import com.codefortress.web.dto.RegisterRequest;
-import com.codefortress.web.dto.TokenResponse;
+import com.codefortress.web.dto.*;
 import com.codefortress.core.event.CodeFortressUserCreatedEvent; // Importar evento
 import org.springframework.context.ApplicationEventPublisher;
 import com.codefortress.web.service.RateLimitService;
@@ -41,23 +41,25 @@ public class AuthController {
     private final ApplicationEventPublisher eventPublisher;
     private final PasswordValidator passwordValidator;
     private final RateLimitService rateLimitService;
+    private final CodeFortressProperties properties;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        // 1. Obtener IP del cliente
-        String ip = httpRequest.getRemoteAddr();
+        // 1. Feature Toggle: ¿Está activo el Rate Limit?
+        if (properties.getRateLimit().isEnabled()) {
 
-        // 2. Verificar Rate Limit
-        Bucket bucket = rateLimitService.resolveBucket(ip);
-        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+            String ip = httpRequest.getRemoteAddr();
+            Bucket bucket = rateLimitService.resolveBucket(ip);
+            ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
 
-        if (!probe.isConsumed()) {
-            // 429 Too Many Requests
-            long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(new ErrorResponse(429, "Too Many Requests",
-                            "Has excedido los intentos de login. Intenta en " + waitForRefill + " segundos.",
-                            LocalDateTime.now()));
+            if (!probe.isConsumed()) {
+                long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body(new ErrorResponse(429, "Too Many Requests",
+                                "Demasiados intentos. Espera " + waitForRefill + " segundos.",
+                                LocalDateTime.now()));
+            }
         }
         // 1. Delegamos la autenticación a Spring Security (que usará nuestro UserDetailsService configurado en Fase 5)
         Authentication authentication = authenticationManager.authenticate(
@@ -68,11 +70,20 @@ public class AuthController {
         // Nota: authentication.getPrincipal() devolverá nuestro CodeFortressUserDetails
         // Pero para generar el token necesitamos el objeto de dominio, lo reconstruimos o buscamos.
         // Por simplicidad, buscamos al usuario para obtener sus roles frescos.
-        CodeFortressUser user = userProvider.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("User found in context but not in provider? Impossible."));
+        // 1. Generar Access Token (JWT)
+        CodeFortressUser user = userProvider.findByUsername(request.username()).orElseThrow();
+        String accessToken = jwtService.generateToken(user);
 
-        String token = jwtService.generateToken(user);
-        return ResponseEntity.ok(new TokenResponse(token));
+        String refreshTokenString = null;
+
+        // VERIFICACIÓN CONFIGURABLE
+        if (properties.getSecurity().getRefreshToken().isEnabled()) {
+            CodeFortressRefreshToken refreshToken = refreshTokenService.createRefreshToken(user.username());
+            refreshTokenString = refreshToken.token();
+        }
+
+        // Si está deshabilitado, refreshTokenString será null
+        return ResponseEntity.ok(new TokenResponse(accessToken, refreshTokenString));
     }
 
     @PostMapping("/register")
@@ -95,5 +106,31 @@ public class AuthController {
         eventPublisher.publishEvent(new CodeFortressUserCreatedEvent(savedUser));
 
         return ResponseEntity.ok(savedUser);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<TokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        if (!properties.getSecurity().getRefreshToken().isEnabled()) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        }
+        String requestRefreshToken = request.refreshToken();
+
+        return java.util.Optional.of(refreshTokenService.findByToken(requestRefreshToken))
+                .map(refreshTokenService::verifyExpiration) // Verifica si venció
+                .map(token -> {
+                    // ROTACIÓN DE TOKENS (Seguridad)
+                    // 1. Buscamos al usuario
+                    CodeFortressUser user = userProvider.findByUsername(token.username()).orElseThrow();
+
+                    // 2. Generamos nuevo Access Token
+                    String newAccessToken = jwtService.generateToken(user);
+
+                    // 3. Generamos nuevo Refresh Token y borramos el viejo (Rotation)
+                    refreshTokenService.deleteByToken(requestRefreshToken);
+                    CodeFortressRefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.username());
+
+                    return ResponseEntity.ok(new TokenResponse(newAccessToken, newRefreshToken.token()));
+                })
+                .orElseThrow(() -> new RuntimeException("Refresh token invalido"));
     }
 }

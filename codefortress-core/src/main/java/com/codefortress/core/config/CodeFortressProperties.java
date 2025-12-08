@@ -15,14 +15,29 @@ public class CodeFortressProperties {
     private Api api = new Api();
     private Cors cors = new Cors();
     private Password password = new Password();
+    private RateLimit rateLimit = new RateLimit();
 
     @Data
     public static class Security {
         private String jwtSecret = "default-super-secret-key-please-change-me-in-production-environment"; // Valor por defecto seguro (length)
-        private long jwtExpirationMs = 86400000; // 1 día
+        private long jwtExpirationMs = 900000; // 1 día
+        // Configuración de Refresh Token
+        private RefreshToken refreshToken = new RefreshToken();
 
         // Lista de reglas de rutas
         private List<RouteRule> routes = new ArrayList<>();
+    }
+    @Data
+    public static class RefreshToken {
+        private boolean enabled = true; // ¿Queremos usar refresh tokens?
+        private long expirationMs = 2592000000L; // Default: 30 días
+    }
+
+    @Data
+    public static class RateLimit {
+        private boolean enabled = true;       // Feature Toggle
+        private int maxAttempts = 5;          // Cuántas balas tienes
+        private int durationSeconds = 60;     // Cuánto tarda en recargar (Ventana de tiempo)
     }
 
     @Data
@@ -33,6 +48,7 @@ public class CodeFortressProperties {
         private List<String> allowedHeaders = Collections.singletonList("*");
         private boolean allowCredentials = true;
     }
+
 
     @Data
     public static class Api {

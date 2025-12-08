@@ -2,12 +2,16 @@ package com.codefortress.starter;
 
 import com.codefortress.core.config.CodeFortressProperties;
 import com.codefortress.core.security.CodeFortressUserDetails;
+import com.codefortress.core.spi.CodeFortressRefreshTokenProvider;
 import com.codefortress.core.spi.CodeFortressUserProvider;
+import com.codefortress.jpa.adapter.JpaRefreshTokenProvider;
 import com.codefortress.jpa.adapter.JpaUserProvider;
+import com.codefortress.jpa.repository.RefreshTokenRepository;
 import com.codefortress.jpa.repository.SecurityUserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +42,15 @@ public class CodeFortressAutoConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "codefortress.security.refresh-token", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnMissingBean(CodeFortressRefreshTokenProvider.class)
+    public CodeFortressRefreshTokenProvider defaultRefreshTokenProvider(
+            RefreshTokenRepository tokenRepo,
+            SecurityUserRepository userRepo) {
+        return new JpaRefreshTokenProvider(tokenRepo, userRepo);
     }
 
     @Bean
