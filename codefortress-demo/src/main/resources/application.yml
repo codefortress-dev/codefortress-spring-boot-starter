@@ -35,3 +35,8 @@ codefortress:
       allowed-origins:
         - "http://localhost:3000" # Simulamos un Frontend React
         - "http://localhost:4200"
+  password:
+    min-length: 10
+    # Esta Regex exige: Al menos 1 número, 1 minúscula, 1 mayúscula, 1 caracter especial (@#$%^&+=)
+    regexp: "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"
+    regexp-error-message: "Tu contraseña es muy debil. Debe tener Mayúsculas, Números y Simbolos."

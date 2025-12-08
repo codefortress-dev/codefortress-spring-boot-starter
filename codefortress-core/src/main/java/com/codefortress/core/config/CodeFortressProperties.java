@@ -47,10 +47,19 @@ public class CodeFortressProperties {
     }
     @Data
     public static class Password {
+        // Regla básica universal (casi siempre necesaria)
         private int minLength = 8;
-        private boolean requireUppercase = true;
-        private boolean requireLowercase = true;
-        private boolean requireNumbers = true;
-        private boolean requireSpecialChar = false;
+
+        // Reglas booleanas (Opcionales, para configuración rápida)
+        private boolean requireUppercase = false; // Las apagamos por defecto si prefieres
+        private boolean requireNumbers = false;
+
+        // --- LA MEJORA: Patrón Personalizado ---
+        // Si el usuario define esto, tiene control total.
+        // Ej: "^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" (Letras y números, min 8)
+        private String regexp = null;
+
+        // El mensaje que se mostrará si la Regex falla
+        private String regexpErrorMessage = "La contraseña no cumple con los requisitos de seguridad.";
     }
 }

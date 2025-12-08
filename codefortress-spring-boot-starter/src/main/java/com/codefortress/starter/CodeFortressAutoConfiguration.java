@@ -23,6 +23,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.codefortress.starter.config.JwtAuthenticationEntryPoint;
+import com.codefortress.core.audit.CodeFortressAuditProvider;
+import com.codefortress.starter.audit.LoggerAuditProvider;
+import com.codefortress.starter.audit.CodeFortressAuditListener;
 
 @Configuration
 @EnableConfigurationProperties(CodeFortressProperties.class)
@@ -63,6 +66,17 @@ public class CodeFortressAutoConfiguration {
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CodeFortressAuditProvider.class)
+    public CodeFortressAuditProvider auditProvider() {
+        return new LoggerAuditProvider();
+    }
+
+    @Bean
+    public CodeFortressAuditListener auditListener(CodeFortressAuditProvider provider) {
+        return new CodeFortressAuditListener(provider);
     }
 
     // --- BLOQUE JPA CONDICIONAL CORREGIDO ---
