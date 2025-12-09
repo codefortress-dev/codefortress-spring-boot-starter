@@ -8,7 +8,7 @@ import java.util.Set;
  */
 public record CodeFortressUser(
         String username,
-        String password, // Debe estar hasheada
+        String password,
         Set<String> roles,
         boolean enabled
 ) {}

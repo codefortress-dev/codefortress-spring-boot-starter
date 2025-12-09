@@ -11,7 +11,6 @@ public class LoggerAuditProvider implements CodeFortressAuditProvider {
 
     @Override
     public void log(AuditRecord record) {
-        // Formato: [AUDIT] [ACTION] User: ... Details: ...
         log.info("[AUDIT] [{}] User: {} | Time: {} | Details: {}",
                 record.action(),
                 record.principal(),

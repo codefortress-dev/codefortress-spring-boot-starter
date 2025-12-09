@@ -23,7 +23,7 @@ public class CodeFortressSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final CodeFortressProperties properties; // Inyectamos configuración del usuario
+    private final CodeFortressProperties properties;
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
 
     @Bean
@@ -33,12 +33,9 @@ public class CodeFortressSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> {
-                    // 1. Permitir rutas de la API (Login/Register) dinámicamente
-                    // Leemos la ruta configurada (ej: "/auth") y permitimos todo lo que cuelgue de ella ("/**")
                     String authBase = properties.getApi().getAuthPath();
                     auth.requestMatchers(authBase + "/**").permitAll();
 
-                    // 2. Aplicar reglas dinámicas de rutas (desde application.yml)
                     properties.getSecurity().getRoutes().forEach(rule -> {
                         if (rule.getRoles().contains("PUBLIC")) {
                             auth.requestMatchers(rule.getPattern()).permitAll();
@@ -48,7 +45,6 @@ public class CodeFortressSecurityConfig {
                         }
                     });
 
-                    // 3. Bloquear todo lo demás por defecto
                     auth.anyRequest().authenticated();
                 })
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
@@ -59,7 +55,6 @@ public class CodeFortressSecurityConfig {
         return http.build();
     }
 
-    // 2. BEAN DE CONFIGURACIÓN CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CodeFortressProperties.Cors corsProps = properties.getCors();
@@ -74,7 +69,6 @@ public class CodeFortressSecurityConfig {
             config.setAllowCredentials(corsProps.isAllowCredentials());
         }
 
-        // Aplicar a todas las rutas
         source.registerCorsConfiguration("/**", config);
         return source;
     }

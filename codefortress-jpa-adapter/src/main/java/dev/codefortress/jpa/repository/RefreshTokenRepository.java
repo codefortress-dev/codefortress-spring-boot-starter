@@ -12,7 +12,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
     Optional<RefreshTokenEntity> findByToken(String token);
 
     @Modifying
-    void deleteByUser(SecurityUserEntity user); // Útil para "Cerrar sesión en todos los dispositivos"
+    void deleteByUser(SecurityUserEntity user);
 
     @Modifying
     void deleteByToken(String token);

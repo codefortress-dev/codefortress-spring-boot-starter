@@ -30,10 +30,10 @@ codefortress:
       enabled: true
       auth-path: "/auth"
 
-    jwt-expiration-ms: 30000 # 5 minutos (corto por seguridad)
+    jwt-expiration-ms: 300000 # 5 minutos (corto por seguridad)
     refresh-token:
       enabled: true
-      expiration-ms: 300000
+      expiration-ms: 3000000
 
     cors:
       enabled: true

@@ -11,7 +11,5 @@ import java.util.Optional;
 public interface CodeFortressUserProvider {
 
     Optional<CodeFortressUser> findByUsername(String username);
-
-    // Métodos opcionales para registro, si soportamos escritura
     CodeFortressUser save(CodeFortressUser user);
 }

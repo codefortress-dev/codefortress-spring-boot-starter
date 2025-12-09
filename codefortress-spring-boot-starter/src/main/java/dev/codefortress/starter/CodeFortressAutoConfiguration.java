@@ -35,10 +35,8 @@ import dev.codefortress.starter.audit.CodeFortressAuditListener;
 @Configuration
 @EnableConfigurationProperties(CodeFortressProperties.class)
 @ComponentScan(basePackages = { "dev.codefortress.core", "dev.codefortress.web" })
-// NOTA: No escaneamos "dev.codefortress.jpa" aquí automáticamente. Lo hacemos abajo condicionalmente.
-public class CodeFortressAutoConfiguration {
 
-    // --- BLOQUE 1: Configuración Básica de Seguridad ---
+public class CodeFortressAutoConfiguration {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -56,7 +54,6 @@ public class CodeFortressAutoConfiguration {
 
     @Bean
     public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
-        // Le pasamos el mapper de Spring al constructor
         return new JwtAuthenticationEntryPoint(objectMapper);
     }
 
@@ -65,12 +62,10 @@ public class CodeFortressAutoConfiguration {
         return config.getAuthenticationManager();
     }
 
-    // --- BLOQUE 2: El Adaptador UserDetailsService ---
-    // Conecta nuestro SPI (CodeFortressUserProvider) con Spring Security
     @Bean
     public UserDetailsService userDetailsService(CodeFortressUserProvider userProvider) {
         return username -> userProvider.findByUsername(username)
-                .map(CodeFortressUserDetails::new) // Adaptador UserDetails
+                .map(CodeFortressUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
@@ -93,19 +88,17 @@ public class CodeFortressAutoConfiguration {
         return new CodeFortressAuditListener(provider);
     }
 
-    // --- BLOQUE JPA CONDICIONAL CORREGIDO ---
+
     @Configuration
-    @ConditionalOnClass(dev.codefortress.jpa.adapter.JpaUserProvider.class) // Chequea si la clase existe en el classpath
-    @EnableJpaRepositories(basePackages = "dev.codefortress.jpa.repository") // Activa los repositorios
-    @EntityScan(basePackages = "dev.codefortress.jpa.entity") // Activa las entidades
+    @ConditionalOnClass(dev.codefortress.jpa.adapter.JpaUserProvider.class)
+    @EnableJpaRepositories(basePackages = "dev.codefortress.jpa.repository")
+    @EntityScan(basePackages = "dev.codefortress.jpa.entity")
     @ConditionalOnProperty(prefix = "codefortress.data", name = "type", havingValue = "jpa", matchIfMissing = true)
     static class JpaAdapterConfiguration {
 
         @Bean
-        @ConditionalOnMissingBean(CodeFortressUserProvider.class) // SOLO si el usuario no creó el suyo
+        @ConditionalOnMissingBean(CodeFortressUserProvider.class)
         public CodeFortressUserProvider defaultJpaProvider(SecurityUserRepository repo, SecurityRoleRepository roleRepository) {
-            // AQUÍ creamos el bean manualmente.
-            // Spring inyectará 'repo' porque @EnableJpaRepositories ya lo habrá creado.
             return new JpaUserProvider(repo, roleRepository);
         }
     }

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "cf_roles") // Prefijo cf_ para evitar colisiones con tablas del usuario
+@Table(name = "cf_roles")
 @Getter @Setter
 public class SecurityRoleEntity {
 
@@ -14,5 +14,5 @@ public class SecurityRoleEntity {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String name; // Ej: "ADMIN", "USER"
+    private String name;
 }

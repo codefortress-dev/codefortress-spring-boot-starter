@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class RateLimitService {
 
-    // Almacenamos los buckets en memoria (IP -> Bucket)
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
     private final CodeFortressProperties properties;
 
@@ -25,14 +24,10 @@ public class RateLimitService {
 
     private Bucket newBucket(String ip) {
         CodeFortressProperties.RateLimit config = properties.getRateLimit();
-
-        // Usamos los valores configurados por el usuario
-        // Nota: Aquí mantenemos 'greedy' por ser mejor UX, pero podrías parametrizar esto también si quisieras
         Bandwidth limit = Bandwidth.classic(
                 config.getMaxAttempts(),
                 Refill.greedy(config.getMaxAttempts(), Duration.ofSeconds(config.getDurationSeconds()))
         );
-
         return Bucket.builder().addLimit(limit).build();
     }
 }

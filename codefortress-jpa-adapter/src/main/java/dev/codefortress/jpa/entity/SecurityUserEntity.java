@@ -20,11 +20,11 @@ public class SecurityUserEntity {
     private String username;
 
     @Column(nullable = false)
-    private String password; // Hash BCrypt
+    private String password;
 
     private boolean enabled = true;
 
-    // Relación Many-to-Many con Roles
+
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "cf_users_roles",

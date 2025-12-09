@@ -24,6 +24,27 @@
         <!-- Modulos de pruebas para test Caja negra-->
         <module>codefortress-demo</module>
     </modules>
+    <url>https://codefortress.dev</url> <licenses>
+    <license>
+        <name>Apache License, Version 2.0</name>
+        <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        <distribution>repo</distribution>
+    </license>
+</licenses>
+
+    <developers>
+        <developer>
+            <id>ronald</id>
+            <name>Ronald Garcia Vazquez</name>
+            <email>ronald@codefortress.dev</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/codefortress/codefortress.git</connection>
+        <developerConnection>scm:git:ssh://github.com:codefortress/codefortress.git</developerConnection>
+        <url>https://github.com/codefortress/codefortress</url>
+    </scm>
 
     <properties>
         <java.version>21</java.version>

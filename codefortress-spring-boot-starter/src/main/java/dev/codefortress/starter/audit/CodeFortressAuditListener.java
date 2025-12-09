@@ -16,7 +16,6 @@ public class CodeFortressAuditListener {
 
     private final CodeFortressAuditProvider auditProvider;
 
-    // 1. Escuchar Registro (Nuestro evento custom)
     @EventListener
     public void onUserRegistered(CodeFortressUserCreatedEvent event) {
         auditProvider.log(new AuditRecord(
@@ -27,7 +26,6 @@ public class CodeFortressAuditListener {
         ));
     }
 
-    // 2. Escuchar Login Exitoso (Evento nativo de Spring Security)
     @EventListener
     public void onLoginSuccess(AuthenticationSuccessEvent event) {
         // Extraer usuario del principal
@@ -46,7 +44,6 @@ public class CodeFortressAuditListener {
         ));
     }
 
-    // 3. Escuchar Login Fallido (Evento nativo de Spring Security)
     @EventListener
     public void onLoginFailure(AbstractAuthenticationFailureEvent event) {
         String username = (String) event.getAuthentication().getPrincipal();

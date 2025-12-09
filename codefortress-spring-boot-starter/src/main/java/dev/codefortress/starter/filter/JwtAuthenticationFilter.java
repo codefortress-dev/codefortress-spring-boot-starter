@@ -23,7 +23,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService; // Spring Security interface
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -41,21 +41,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // ... dentro de doFilterInternal ...
 
         jwt = authHeader.substring(7);
-        // Extraemos username
+
         try {
             userEmail = jwtService.extractUsername(jwt);
         } catch (Exception e) {
-            // Si el token está mal formado o expirado, ignoramos y seguimos
             filterChain.doFilter(request, response);
             return;
         }
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                // INTENTO DE CARGAR USUARIO
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
@@ -68,11 +65,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (UsernameNotFoundException e) {
-                // ARQUITECTURA ROBUSTA:
-                // Si el usuario del token ya no existe en la DB (ej: fue borrado o DB reiniciada),
-                // NO lanzamos error. Simplemente no autenticamos.
-                // Si la ruta es pública (/register), pasará.
-                // Si la ruta es privada (/api/private), el SecurityFilterChain la bloqueará después (403).
                 logger.warn("Token recibido para usuario no existente: " + userEmail);
             }
         }

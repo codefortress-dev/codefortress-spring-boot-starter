@@ -22,7 +22,8 @@ public class CodeFortressUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.roles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role)) // Spring convention
+                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role) // <--- AUTO-FIX
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
 

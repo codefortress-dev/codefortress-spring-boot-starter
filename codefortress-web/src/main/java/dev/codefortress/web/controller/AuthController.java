@@ -28,9 +28,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 
 @RestController
-@RequestMapping("${codefortress.api.auth-path:/auth}") // Ruta configurable, default /auth
+@RequestMapping("${codefortress.api.auth-path:/auth}")
 @RequiredArgsConstructor
-// FEATURE TOGGLE: Si el usuario pone 'false', este controlador desaparece.
 @ConditionalOnProperty(prefix = "codefortress.api", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AuthController {
 
@@ -46,9 +45,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        // 1. Feature Toggle: ¿Está activo el Rate Limit?
         if (properties.getRateLimit().isEnabled()) {
-
             String ip = httpRequest.getRemoteAddr();
             Bucket bucket = rateLimitService.resolveBucket(ip);
             ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
@@ -61,28 +58,21 @@ public class AuthController {
                                 LocalDateTime.now()));
             }
         }
-        // 1. Delegamos la autenticación a Spring Security (que usará nuestro UserDetailsService configurado en Fase 5)
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
-        // 2. Si pasamos el paso 1, el usuario es válido. Generamos Token.
-        // Nota: authentication.getPrincipal() devolverá nuestro CodeFortressUserDetails
-        // Pero para generar el token necesitamos el objeto de dominio, lo reconstruimos o buscamos.
-        // Por simplicidad, buscamos al usuario para obtener sus roles frescos.
-        // 1. Generar Access Token (JWT)
         CodeFortressUser user = userProvider.findByUsername(request.username()).orElseThrow();
         String accessToken = jwtService.generateToken(user);
 
         String refreshTokenString = null;
 
-        // VERIFICACIÓN CONFIGURABLE
         if (properties.getSecurity().getRefreshToken().isEnabled()) {
             CodeFortressRefreshToken refreshToken = refreshTokenService.createRefreshToken(user.username());
             refreshTokenString = refreshToken.token();
         }
 
-        // Si está deshabilitado, refreshTokenString será null
         return ResponseEntity.ok(new TokenResponse(accessToken, refreshTokenString));
     }
 
@@ -91,20 +81,16 @@ public class AuthController {
         passwordValidator.validate(request.password());
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        // 2. Creamos el modelo agnóstico
         CodeFortressUser newUser = new CodeFortressUser(
                 request.username(),
                 encodedPassword,
                 request.roles() != null ? request.roles() : new HashSet<>(),
-                true // Enabled por defecto
+                true
         );
 
         CodeFortressUser savedUser = userProvider.save(newUser);
 
-
-        // Esto es asíncrono/desacoplado por defecto en la lógica del negocio
         eventPublisher.publishEvent(new CodeFortressUserCreatedEvent(savedUser));
-
         return ResponseEntity.ok(savedUser);
     }
 
@@ -116,19 +102,12 @@ public class AuthController {
         String requestRefreshToken = request.refreshToken();
 
         return java.util.Optional.of(refreshTokenService.findByToken(requestRefreshToken))
-                .map(refreshTokenService::verifyExpiration) // Verifica si venció
+                .map(refreshTokenService::verifyExpiration)
                 .map(token -> {
-                    // ROTACIÓN DE TOKENS (Seguridad)
-                    // 1. Buscamos al usuario
                     CodeFortressUser user = userProvider.findByUsername(token.username()).orElseThrow();
-
-                    // 2. Generamos nuevo Access Token
                     String newAccessToken = jwtService.generateToken(user);
-
-                    // 3. Generamos nuevo Refresh Token y borramos el viejo (Rotation)
                     refreshTokenService.deleteByToken(requestRefreshToken);
                     CodeFortressRefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.username());
-
                     return ResponseEntity.ok(new TokenResponse(newAccessToken, newRefreshToken.token()));
                 })
                 .orElseThrow(() -> new RuntimeException("Refresh token invalido"));

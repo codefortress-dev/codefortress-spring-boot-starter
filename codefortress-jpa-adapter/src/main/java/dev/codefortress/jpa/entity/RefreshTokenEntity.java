@@ -20,7 +20,6 @@ public class RefreshTokenEntity {
     @Column(nullable = false)
     private Instant expiryDate;
 
-    // Relación con el usuario
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private SecurityUserEntity user;

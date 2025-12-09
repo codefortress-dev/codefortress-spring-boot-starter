@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper;
-    // INYECCIÓN POR CONSTRUCTOR
     public JwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
@@ -30,7 +29,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Unauthorized",
-                "Acceso denegado: Token inválido o ausente", // Mensaje amigable
+                "Acceso denegado: Token inválido o ausente",
                 LocalDateTime.now()
         );
 
