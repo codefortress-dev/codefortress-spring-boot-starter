@@ -27,7 +27,7 @@ Seguridad profesional para Spring Boot, lista para usar. Autenticación JWT, Ref
 
 ```xml
 <dependency>
-    <groupId>com.codefortress</groupId>
+    <groupId>dev.codefortress</groupId>
     <artifactId>codefortress-spring-boot-starter</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>

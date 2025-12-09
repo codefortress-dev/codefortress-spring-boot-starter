@@ -81,3 +81,25 @@ env.properties
 # Opcional: Si tienes un application-local.yml para pruebas locales
 application-local.yml
 application-secret.yml
+# --- SEGURIDAD Y CREDENCIALES (CRÍTICO) ---
+# Ignorar llaves SSH específicas
+id_ed25519_personal
+id_ed25519_personal.pub
+
+# Ignorar cualquier archivo de llave privada/pública común
+*.pem
+*.pub
+*.key
+id_rsa
+id_dsa
+id_ed25519
+id_ecdsa
+
+# Ignorar carpetas de configuración SSH si se copian por error
+.ssh/
+ssh/
+
+# Ignorar archivos de secretos de entorno
+.env
+.env.local
+secrets.properties

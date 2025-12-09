@@ -10,7 +10,7 @@
         <version>3.3.0</version>
         <relativePath/> </parent>
 
-    <groupId>com.codefortress</groupId>
+    <groupId>dev.codefortress</groupId>
     <artifactId>codefortress-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging> <name>CodeFortress Security Library</name>
@@ -33,17 +33,17 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.codefortress</groupId>
+                <groupId>dev.codefortress</groupId>
                 <artifactId>codefortress-core</artifactId>
                 <version>${codefortress.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.codefortress</groupId>
+                <groupId>dev.codefortress</groupId>
                 <artifactId>codefortress-jpa-adapter</artifactId>
                 <version>${codefortress.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.codefortress</groupId>
+                <groupId>dev.codefortress</groupId>
                 <artifactId>codefortress-web</artifactId>
                 <version>${codefortress.version}</version>
             </dependency>
