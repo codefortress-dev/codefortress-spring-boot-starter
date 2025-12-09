@@ -20,7 +20,7 @@ public class RefreshTokenEntity {
     @Column(nullable = false)
     private Instant expiryDate;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private SecurityUserEntity user;
 }

@@ -48,8 +48,9 @@ public class CodeFortressAutoConfiguration {
     @ConditionalOnMissingBean(CodeFortressRefreshTokenProvider.class)
     public CodeFortressRefreshTokenProvider defaultRefreshTokenProvider(
             RefreshTokenRepository tokenRepo,
-            SecurityUserRepository userRepo) {
-        return new JpaRefreshTokenProvider(tokenRepo, userRepo);
+            SecurityUserRepository userRepo,
+            CodeFortressProperties properties) {
+        return new JpaRefreshTokenProvider(tokenRepo, userRepo, properties);
     }
 
     @Bean

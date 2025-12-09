@@ -30,6 +30,7 @@ public class CodeFortressProperties {
     public static class RefreshToken {
         private boolean enabled = true;
         private long expirationMs = 2592000000L;
+        private int maxSessions = 1;
     }
 
     @Data

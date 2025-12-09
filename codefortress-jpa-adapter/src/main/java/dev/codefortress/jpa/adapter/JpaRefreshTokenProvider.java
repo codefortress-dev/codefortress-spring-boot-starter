@@ -10,23 +10,48 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+import dev.codefortress.core.config.CodeFortressProperties;
 @RequiredArgsConstructor
 public class JpaRefreshTokenProvider implements CodeFortressRefreshTokenProvider {
 
     private final RefreshTokenRepository tokenRepository;
     private final SecurityUserRepository userRepository;
+    private final CodeFortressProperties properties;
 
     @Override
     @Transactional
     public CodeFortressRefreshToken create(String username, long expirationMs) {
-        // 1. Buscar usuario
         SecurityUserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found for refresh token"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. Generar Token Opaco (UUID)
+        int maxSessions = properties.getSecurity().getRefreshToken().getMaxSessions();
+
+        // CASO A: Single Session Estricta (Optimización rápida)
+        if (maxSessions == 1) {
+            tokenRepository.deleteByUser(user);
+            tokenRepository.flush(); // Forzar borrado inmediato
+        }
+        // CASO B: Límite Numérico (Netflix Style)
+        else if (maxSessions > 1) {
+            List<RefreshTokenEntity> activeTokens = tokenRepository.findByUserOrderByIdAsc(user);
+
+            // Si ya estamos llenos (o pasados), hay que hacer espacio
+            int excess = activeTokens.size() - maxSessions + 1; // +1 porque vamos a agregar uno nuevo ahora
+
+            if (excess > 0) {
+                // Borramos los 'N' más viejos de la lista
+                for (int i = 0; i < excess; i++) {
+                    tokenRepository.delete(activeTokens.get(i));
+                }
+                tokenRepository.flush();
+            }
+        }
+        // CASO C: Ilimitado (-1) -> No hacemos nada, solo insertamos.
+
+        // --- CREACIÓN (Igual que siempre) ---
         RefreshTokenEntity entity = new RefreshTokenEntity();
         entity.setUser(user);
         entity.setExpiryDate(Instant.now().plusMillis(expirationMs));

@@ -28,8 +28,9 @@ CREATE TABLE IF NOT EXISTS cf_users_roles (
 -- 4. Tabla de Refresh Tokens
 CREATE TABLE IF NOT EXISTS cf_refresh_tokens (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    token VARCHAR(255) NOT NULL UNIQUE,
+    token VARCHAR(255) NOT NULL UNIQUE, -- El token sí es único
     expiry_date TIMESTAMP NOT NULL,
     user_id BIGINT,
+    -- SIN UNIQUE EN user_id
     CONSTRAINT fk_refresh_user FOREIGN KEY (user_id) REFERENCES cf_users(id)
 );

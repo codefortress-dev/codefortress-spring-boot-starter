@@ -34,6 +34,7 @@ codefortress:
     refresh-token:
       enabled: true
       expiration-ms: 3000000
+      max-sessions: 1
 
     cors:
       enabled: true
