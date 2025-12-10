@@ -19,7 +19,7 @@ public class CodeFortressProperties {
 
     @Data
     public static class Security {
-        private String jwtSecret = "default-super-secret-key-please-change-me-in-production-environment"; // Valor por defecto seguro (length)
+        private String jwtSecret = "default-super-secret-key-please-change-me-in-production-environment";
         private long jwtExpirationMs = 900000; // 1 día
 
         private RefreshToken refreshToken = new RefreshToken();
@@ -73,4 +73,5 @@ public class CodeFortressProperties {
 
         private String regexpErrorMessage = "La contraseña no cumple con los requisitos de seguridad.";
     }
+
 }

@@ -31,7 +31,7 @@ import dev.codefortress.starter.config.JwtAuthenticationEntryPoint;
 import dev.codefortress.core.audit.CodeFortressAuditProvider;
 import dev.codefortress.starter.audit.LoggerAuditProvider;
 import dev.codefortress.starter.audit.CodeFortressAuditListener;
-
+import dev.codefortress.starter.support.CodeFortressLifecycleLogger;
 @Configuration
 @EnableConfigurationProperties(CodeFortressProperties.class)
 @ComponentScan(basePackages = { "dev.codefortress.core", "dev.codefortress.web" })
@@ -102,5 +102,10 @@ public class CodeFortressAutoConfiguration {
         public CodeFortressUserProvider defaultJpaProvider(SecurityUserRepository repo, SecurityRoleRepository roleRepository) {
             return new JpaUserProvider(repo, roleRepository);
         }
+    }
+
+    @Bean
+    public CodeFortressLifecycleLogger codeFortressLifecycleLogger() {
+        return new CodeFortressLifecycleLogger();
     }
 }

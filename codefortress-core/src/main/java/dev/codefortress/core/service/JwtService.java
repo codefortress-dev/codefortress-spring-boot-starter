@@ -6,6 +6,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -16,7 +19,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
     private final CodeFortressProperties properties;
 
     public JwtService(CodeFortressProperties properties) {
@@ -68,5 +71,17 @@ public class JwtService {
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(properties.getSecurity().getJwtSecret());
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    @PostConstruct
+    public void checkSecurity() {
+        if ("default-super-secret-key-please-change-me-in-production-environment".equals(properties.getSecurity().getJwtSecret())) {
+            log.warn("\n\n" +
+                    "*************************************************************\n" +
+                    "ATENCION: Estás usando la clave JWT por defecto de CodeFortress.\n" +
+                    "Esto NO ES SEGURO para produccion.\n" +
+                    "Configura 'codefortress.security.jwt-secret' en tu application.yml\n" +
+                    "*************************************************************\n");
+        }
     }
 }

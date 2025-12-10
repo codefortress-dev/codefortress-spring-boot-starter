@@ -22,6 +22,25 @@ Seguridad profesional para Spring Boot, lista para usar. Autenticación JWT, Ref
 
 🚀 Instalación Rápida
 
+### 🛡️ Características Destacadas
+
+#### 📱 Gestión Inteligente de Sesiones
+CodeFortress implementa un sistema de **"Ventana Deslizante"** para los Refresh Tokens.
+* Puedes configurar `max-sessions: 1` para máxima seguridad (estilo Banca).
+* O `max-sessions: 5` para permitir múltiples dispositivos (estilo Streaming).
+* El sistema limpia automáticamente las sesiones más antiguas cuando se alcanza el límite.
+
+#### 🧱 Rate Limiting (Anti-Brute Force)
+Protección nativa **In-Memory** basada en el algoritmo *Token Bucket*.
+* Bloquea IPs que intentan adivinar contraseñas o saturar el endpoint de login.
+* Configurable por número de intentos y ventana de tiempo.
+* *Nota: En la versión Community, el límite es por instancia de servidor.*
+
+#### 🔐 Política de Contraseñas Híbrida
+No impongas reglas arbitrarias. CodeFortress valida la longitud mínima por defecto, pero permite inyectar tu propia **Expresión Regular (Regex)** desde la configuración para cumplir con normativas específicas (NIST, PCI-DSS) sin recompilar código.
+
+
+
 ## Agrega la dependencia en tu pom.xml.
 
 
@@ -80,6 +99,46 @@ codefortress:
       - "http://localhost:3000"
       - "https://mi-dominio.com"
 ```
+## ⚙️ Configuración Avanzada
+
+CodeFortress viene listo para usar, pero puedes ajustar cada tornillo en tu `application.yml`:
+
+```yaml
+codefortress:
+  # 1. API y Rutas
+  api:
+    auth-path: "/auth"      # Prefijo base (ej: /auth/login)
+
+  # 2. Seguridad y Sesiones
+  security:
+    jwt-secret: "TU_CLAVE_SECRETA_DEBE_SER_LARGA_Y_COMPLEJA_PARA_PROD"
+    jwt-expiration-ms: 900000        # 15 minutos (Access Token)
+
+    refresh-token:
+      enabled: true
+      expiration-ms: 2592000000      # 30 días
+      # Control de Sesiones Concurrentes (Nuevo en v1.0)
+      # 1  = Estricto (Banco). Al loguearse en otro lado, cierra la sesión anterior.
+      # 3  = Flexible (Netflix). Permite 3 dispositivos. El 4º dispositivo borra el 1º.
+      # -1 = Ilimitado.
+      max-sessions: 1
+
+  # 3. Política de Contraseñas (Hardening)
+  password:
+    min-length: 8
+    # Opcional: Regex para exigir Mayúsculas, Números y Especiales
+    # regexp: "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$"
+    # regexp-error-message: "La contraseña debe tener Mayúscula, Número y Símbolo."
+
+  # 4. Protección Fuerza Bruta (Rate Limiting)
+  rate-limit:
+    enabled: true
+    max-attempts: 5         # Bloquea tras 5 fallos seguidos
+    duration-seconds: 60    # El bloqueo dura 1 minuto (recarga gradual)
+
+
+
+
 ## 🔌🔌 Guía de Extensión (Personaliza Todo)
 
 CodeFortress usa Arquitectura Hexagonal. Esto significa que puedes reemplazar cualquier pieza de la lógica implementando una Interfaz (SPI). Si defines tu propio Bean, CodeFortress desactiva el suyo automáticamente.
