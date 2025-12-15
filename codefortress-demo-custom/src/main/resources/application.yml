@@ -1,0 +1,25 @@
+server:
+  port: 8085 # Usamos otro puerto para no chocar con la demo normal
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/codefortress_custom_db
+    username: postgres # Tu usuario
+    password: admin # Tu password
+  jpa:
+    hibernate:
+      ddl-auto: update # Para que cree las tablas automágicamente
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+codefortress:
+  api:
+    enabled: true
+  security:
+    jwt-secret: "cG9wdWxhdGlvbnNlbnNlc29pbGNvbW1hbmRhd2F5ZnJvbnRtb3VudGFpbnNpbGtkYWk="
+    jwt-expiration-ms: 600000
+    refresh-token:
+      enabled: true
+  # IMPORTANTE: Desactivamos el adaptador JPA por defecto implícitamente
+  # al definir nuestro propio Bean de UserProvider más abajo.

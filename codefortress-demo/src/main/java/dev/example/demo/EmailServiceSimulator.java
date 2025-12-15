@@ -1,4 +1,4 @@
-package com.example.demo;
+package dev.example.demo;
 
 import dev.codefortress.core.event.CodeFortressUserCreatedEvent;
 import org.springframework.context.event.EventListener;

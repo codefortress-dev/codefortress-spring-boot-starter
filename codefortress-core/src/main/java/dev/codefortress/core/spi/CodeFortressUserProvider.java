@@ -9,7 +9,6 @@ import java.util.Optional;
  * O el usuario creará su propio Bean implementando esto para sistemas Legacy.
  */
 public interface CodeFortressUserProvider {
-
     Optional<CodeFortressUser> findByUsername(String username);
     CodeFortressUser save(CodeFortressUser user);
 }
