@@ -7,12 +7,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
 
+/**
+ * Service for validating passwords based on the configured password policy.
+ */
 @Service
 @RequiredArgsConstructor
 public class PasswordValidator {
 
     private final CodeFortressProperties properties;
 
+    /**
+     * Validates a password against the configured password policy.
+     *
+     * @param password the password to validate
+     * @throws CodeFortressException if the password is not valid
+     */
     public void validate(String password) {
         CodeFortressProperties.Password rules = properties.getPassword();
 

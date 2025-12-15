@@ -14,6 +14,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import dev.codefortress.core.config.CodeFortressProperties;
+
+/**
+ * JPA implementation of the {@link CodeFortressRefreshTokenProvider} SPI.
+ * This class provides refresh token data from a JPA-based repository.
+ */
 @RequiredArgsConstructor
 public class JpaRefreshTokenProvider implements CodeFortressRefreshTokenProvider {
 
@@ -21,6 +26,14 @@ public class JpaRefreshTokenProvider implements CodeFortressRefreshTokenProvider
     private final SecurityUserRepository userRepository;
     private final CodeFortressProperties properties;
 
+    /**
+     * Creates a new refresh token for the given user.
+     * It also handles session management by deleting old tokens if the maximum number of sessions is exceeded.
+     *
+     * @param username     the username of the user
+     * @param expirationMs the expiration time in milliseconds
+     * @return the created refresh token
+     */
     @Override
     @Transactional
     public CodeFortressRefreshToken create(String username, long expirationMs) {
@@ -29,29 +42,21 @@ public class JpaRefreshTokenProvider implements CodeFortressRefreshTokenProvider
 
         int maxSessions = properties.getSecurity().getRefreshToken().getMaxSessions();
 
-        // CASO A: Single Session Estricta (Optimización rápida)
         if (maxSessions == 1) {
             tokenRepository.deleteByUser(user);
-            tokenRepository.flush(); // Forzar borrado inmediato
-        }
-        // CASO B: Límite Numérico (Netflix Style)
-        else if (maxSessions > 1) {
+            tokenRepository.flush();
+        } else if (maxSessions > 1) {
             List<RefreshTokenEntity> activeTokens = tokenRepository.findByUserOrderByIdAsc(user);
-
-            // Si ya estamos llenos (o pasados), hay que hacer espacio
-            int excess = activeTokens.size() - maxSessions + 1; // +1 porque vamos a agregar uno nuevo ahora
+            int excess = activeTokens.size() - maxSessions + 1;
 
             if (excess > 0) {
-                // Borramos los 'N' más viejos de la lista
                 for (int i = 0; i < excess; i++) {
                     tokenRepository.delete(activeTokens.get(i));
                 }
                 tokenRepository.flush();
             }
         }
-        // CASO C: Ilimitado (-1) -> No hacemos nada, solo insertamos.
 
-        // --- CREACIÓN (Igual que siempre) ---
         RefreshTokenEntity entity = new RefreshTokenEntity();
         entity.setUser(user);
         entity.setExpiryDate(Instant.now().plusMillis(expirationMs));
@@ -62,6 +67,12 @@ public class JpaRefreshTokenProvider implements CodeFortressRefreshTokenProvider
         return new CodeFortressRefreshToken(entity.getToken(), user.getUsername(), entity.getExpiryDate());
     }
 
+    /**
+     * Finds a refresh token by its token string.
+     *
+     * @param token the token string to search for
+     * @return an optional containing the refresh token if found, or an empty optional otherwise
+     */
     @Override
     @Transactional(readOnly = true)
     public Optional<CodeFortressRefreshToken> findByToken(String token) {
@@ -73,12 +84,22 @@ public class JpaRefreshTokenProvider implements CodeFortressRefreshTokenProvider
                 ));
     }
 
+    /**
+     * Deletes a refresh token by its token string.
+     *
+     * @param token the token string of the refresh token to delete
+     */
     @Override
     @Transactional
     public void deleteByToken(String token) {
         tokenRepository.deleteByToken(token);
     }
 
+    /**
+     * Deletes all refresh tokens for a given user.
+     *
+     * @param username the username of the user
+     */
     @Override
     @Transactional
     public void deleteByUsername(String username) {

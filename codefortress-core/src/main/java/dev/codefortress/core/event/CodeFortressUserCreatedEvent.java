@@ -3,7 +3,9 @@ package dev.codefortress.core.event;
 import dev.codefortress.core.model.CodeFortressUser;
 
 /**
- * Evento que se dispara cuando un usuario se registra exitosamente.
- * Los clientes pueden escuchar esto con @EventListener.
+ * Event that is fired when a user is successfully registered.
+ * Clients can listen for this event using {@code @EventListener}.
+ *
+ * @param user the user that was created
  */
 public record CodeFortressUserCreatedEvent(CodeFortressUser user) {}

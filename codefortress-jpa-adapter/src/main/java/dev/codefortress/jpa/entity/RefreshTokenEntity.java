@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import java.time.Instant;
 
+/**
+ * JPA entity for a refresh token.
+ */
 @Entity
 @Table(name = "cf_refresh_tokens")
 @Getter @Setter

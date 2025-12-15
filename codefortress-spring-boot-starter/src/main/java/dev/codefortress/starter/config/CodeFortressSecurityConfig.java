@@ -16,6 +16,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * Main security configuration for the CodeFortress starter.
+ * This class configures the security filter chain, CORS, and JWT authentication.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -26,6 +30,13 @@ public class CodeFortressSecurityConfig {
     private final CodeFortressProperties properties;
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
 
+    /**
+     * Configures the security filter chain.
+     *
+     * @param http the {@link HttpSecurity} to configure
+     * @return the configured {@link SecurityFilterChain}
+     * @throws Exception if an error occurs
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -55,6 +66,11 @@ public class CodeFortressSecurityConfig {
         return http.build();
     }
 
+    /**
+     * Configures the CORS settings.
+     *
+     * @return the configured {@link CorsConfigurationSource}
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CodeFortressProperties.Cors corsProps = properties.getCors();

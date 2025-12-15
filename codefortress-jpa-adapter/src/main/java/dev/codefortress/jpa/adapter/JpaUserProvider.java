@@ -13,9 +13,11 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.transaction.annotation.Transactional;
 
-
+/**
+ * JPA implementation of the {@link CodeFortressUserProvider} SPI.
+ * This class provides user data from a JPA-based repository.
+ */
 public class JpaUserProvider implements CodeFortressUserProvider {
 
     private final SecurityUserRepository userRepository;
@@ -23,9 +25,15 @@ public class JpaUserProvider implements CodeFortressUserProvider {
 
     public JpaUserProvider(SecurityUserRepository userRepository, SecurityRoleRepository roleRepository) {
         this.userRepository = userRepository;
-         this.roleRepository =  roleRepository;
+        this.roleRepository = roleRepository;
     }
 
+    /**
+     * Finds a user by their username.
+     *
+     * @param username the username to search for
+     * @return an optional containing the user if found, or an empty optional otherwise
+     */
     @Override
     @Transactional(readOnly = true)
     public Optional<CodeFortressUser> findByUsername(String username) {
@@ -33,6 +41,13 @@ public class JpaUserProvider implements CodeFortressUserProvider {
                 .map(this::mapToCoreUser);
     }
 
+    /**
+     * Saves a user.
+     *
+     * @param user the user to save
+     * @return the saved user
+     * @throws UserAlreadyExistsException if the user already exists
+     */
     @Override
     @Transactional
     public CodeFortressUser save(CodeFortressUser user) {

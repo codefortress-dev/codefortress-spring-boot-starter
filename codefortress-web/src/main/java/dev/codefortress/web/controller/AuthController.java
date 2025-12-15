@@ -27,6 +27,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 
+/**
+ * Controller for handling authentication-related requests.
+ * This includes login, registration, and token refreshing.
+ */
 @RestController
 @RequestMapping("${codefortress.api.auth-path:/auth}")
 @RequiredArgsConstructor
@@ -43,6 +47,13 @@ public class AuthController {
     private final CodeFortressProperties properties;
     private final RefreshTokenService refreshTokenService;
 
+    /**
+     * Authenticates a user and returns a JWT.
+     *
+     * @param request     the login request containing username and password
+     * @param httpRequest the HTTP request
+     * @return a response entity containing the access and refresh tokens
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         if (properties.getRateLimit().isEnabled()) {
@@ -76,6 +87,12 @@ public class AuthController {
         return ResponseEntity.ok(new TokenResponse(accessToken, refreshTokenString));
     }
 
+    /**
+     * Registers a new user.
+     *
+     * @param request the registration request containing username, password, and roles
+     * @return a response entity containing the created user
+     */
     @PostMapping("/register")
     public ResponseEntity<CodeFortressUser> register(@RequestBody RegisterRequest request) {
         passwordValidator.validate(request.password());
@@ -94,6 +111,12 @@ public class AuthController {
         return ResponseEntity.ok(savedUser);
     }
 
+    /**
+     * Refreshes an access token using a refresh token.
+     *
+     * @param request the refresh token request
+     * @return a response entity containing the new access and refresh tokens
+     */
     @PostMapping("/refresh-token")
     public ResponseEntity<TokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
         if (!properties.getSecurity().getRefreshToken().isEnabled()) {

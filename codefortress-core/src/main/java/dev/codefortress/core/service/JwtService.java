@@ -17,6 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Service for handling JSON Web Tokens (JWTs).
+ * This includes generating, validating, and extracting information from tokens.
+ */
 @Service
 public class JwtService {
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
@@ -26,6 +30,12 @@ public class JwtService {
         this.properties = properties;
     }
 
+    /**
+     * Generates a JWT for a given user.
+     *
+     * @param user the user to generate the token for
+     * @return the generated JWT
+     */
     public String generateToken(CodeFortressUser user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", user.roles());
@@ -42,11 +52,24 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * Validates a JWT.
+     *
+     * @param token    the token to validate
+     * @param username the username to validate against
+     * @return true if the token is valid, false otherwise
+     */
     public boolean isTokenValid(String token, String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
     }
 
+    /**
+     * Extracts the username from a JWT.
+     *
+     * @param token the token to extract the username from
+     * @return the extracted username
+     */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -73,6 +96,10 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * Checks if the default JWT secret is being used and logs a warning if it is.
+     * This is a security check to ensure that the default secret is not used in production.
+     */
     @PostConstruct
     public void checkSecurity() {
         if ("default-super-secret-key-please-change-me-in-production-environment".equals(properties.getSecurity().getJwtSecret())) {

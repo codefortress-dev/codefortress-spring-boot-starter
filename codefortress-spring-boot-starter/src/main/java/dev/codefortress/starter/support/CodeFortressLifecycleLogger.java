@@ -5,15 +5,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
+/**
+ * An {@link ApplicationListener} that logs a banner to the console when the application is ready.
+ * This banner provides information about the CodeFortress library and instructions for database setup.
+ */
 public class CodeFortressLifecycleLogger implements ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(CodeFortressLifecycleLogger.class);
 
+    /**
+     * Handles the {@link ApplicationReadyEvent} and logs the CodeFortress banner.
+     *
+     * @param event the application ready event
+     */
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         String banner = """
                 
-           ______vZ______
+           ______vZ________
           /   CODEFORTRESS  \\    - SECURITY SHIELD: ACTIVE
          |    Community     |   -------------------------------------
           \\  dev.codefortress/   domain: dev.codefortress
@@ -25,18 +34,8 @@ public class CodeFortressLifecycleLogger implements ApplicationListener<Applicat
               
               - Location: classpath:scripts/codefortress-schema.sql
               
-           - CURRENT STATUS:
-              - Auth Mode:     JWT + Refresh Token
-              - Rate Limit:    Enabled (In-Memory)
-              - Pass Policy:   Active
-              - Multi-Session: Configurable (check max-sessions)
-              
-            ️  Running in Community Mode. For Enterprise features (Dashboard, SSO, Redis),
-              please upgrade to CodeFortress Pro.
         """;
 
-        // Usamos System.out para asegurar que salga limpio en la consola,
-        // o log.info si prefieres el formato de Spring.
         System.out.println(banner);
     }
 }

@@ -13,10 +13,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 
+/**
+ * Global exception handler for the CodeFortress application.
+ * This class handles exceptions thrown by the application and returns a consistent error response.
+ */
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CodeFortressExceptionHandler {
 
+    /**
+     * Handles the {@link UserAlreadyExistsException}.
+     * @param ex the exception
+     * @return a response entity with a conflict status
+     */
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUserExists(UserAlreadyExistsException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -28,6 +37,11 @@ public class CodeFortressExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
+    /**
+     * Handles the {@link BadCredentialsException}.
+     * @param ex the exception
+     * @return a response entity with an unauthorized status
+     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -39,6 +53,11 @@ public class CodeFortressExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * Handles the {@link CodeFortressException}.
+     * @param ex the exception
+     * @return a response entity with a bad request status
+     */
     @ExceptionHandler(CodeFortressException.class)
     public ResponseEntity<ErrorResponse> handleGeneric(CodeFortressException ex) {
         ErrorResponse error = new ErrorResponse(

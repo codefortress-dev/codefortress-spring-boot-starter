@@ -7,6 +7,9 @@ import lombok.Setter;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * JPA entity for a security user.
+ */
 @Entity
 @Table(name = "cf_users")
 @Getter @Setter

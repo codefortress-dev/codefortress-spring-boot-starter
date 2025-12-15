@@ -11,11 +11,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 
+/**
+ * Listens for security-related application events and logs them using the configured {@link CodeFortressAuditProvider}.
+ * This includes user registration, successful logins, and failed login attempts.
+ */
 @RequiredArgsConstructor
 public class CodeFortressAuditListener {
 
     private final CodeFortressAuditProvider auditProvider;
 
+    /**
+     * Handles the {@link CodeFortressUserCreatedEvent} and logs the user registration.
+     *
+     * @param event the user creation event
+     */
     @EventListener
     public void onUserRegistered(CodeFortressUserCreatedEvent event) {
         auditProvider.log(new AuditRecord(
@@ -26,9 +35,13 @@ public class CodeFortressAuditListener {
         ));
     }
 
+    /**
+     * Handles the {@link AuthenticationSuccessEvent} and logs the successful login.
+     *
+     * @param event the authentication success event
+     */
     @EventListener
     public void onLoginSuccess(AuthenticationSuccessEvent event) {
-        // Extraer usuario del principal
         String username = "unknown";
         if (event.getAuthentication().getPrincipal() instanceof UserDetails ud) {
             username = ud.getUsername();
@@ -44,6 +57,11 @@ public class CodeFortressAuditListener {
         ));
     }
 
+    /**
+     * Handles the {@link AbstractAuthenticationFailureEvent} and logs the failed login attempt.
+     *
+     * @param event the authentication failure event
+     */
     @EventListener
     public void onLoginFailure(AbstractAuthenticationFailureEvent event) {
         String username = (String) event.getAuthentication().getPrincipal();

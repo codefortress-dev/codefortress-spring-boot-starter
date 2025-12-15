@@ -9,7 +9,8 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * Clase adaptadora: Convierte nuestro usuario agnóstico en algo que Spring Security entiende.
+ * Adapter class that converts a {@link CodeFortressUser} into a {@link UserDetails} object
+ * that Spring Security can understand.
  */
 public class CodeFortressUserDetails implements UserDetails {
 
@@ -19,10 +20,16 @@ public class CodeFortressUserDetails implements UserDetails {
         this.user = user;
     }
 
+    /**
+     * Returns the authorities granted to the user.
+     * It ensures that all roles start with the "ROLE_" prefix.
+     *
+     * @return a collection of granted authorities
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.roles().stream()
-                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role) // <--- AUTO-FIX
+                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
