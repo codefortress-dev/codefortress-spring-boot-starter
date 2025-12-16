@@ -49,6 +49,7 @@ public class CodeFortressAutoConfiguration {
      * @return a {@link BCryptPasswordEncoder} instance.
      */
     @Bean
+    @ConditionalOnMissingBean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }

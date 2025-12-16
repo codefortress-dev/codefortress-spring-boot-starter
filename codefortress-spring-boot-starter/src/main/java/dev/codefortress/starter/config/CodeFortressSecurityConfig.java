@@ -5,6 +5,8 @@ import dev.codefortress.starter.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,6 +40,7 @@ public class CodeFortressSecurityConfig {
      * @throws Exception if an error occurs
      */
     @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE + 10)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
