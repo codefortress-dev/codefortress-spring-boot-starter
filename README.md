@@ -261,9 +261,66 @@ Por defecto, la ruta base es `/auth`, pero es configurable vía `codefortress.ap
 | `POST` | `/auth/register` | Registra un nuevo usuario y dispara el evento de creación. | ❌ No | `{"username": "user", "password": "123", "roles": ["USER"]}` |
 | `POST` | `/auth/refresh-token` | Rota el Refresh Token y entrega un nuevo Access Token. | ❌ No | `{"refreshToken": "550e8400-e29b-..."}` |
 
+## 🔓 Personalización Avanzada y Coexistencia
 
+CodeFortress Security está diseñado para ser **robusto por defecto**, pero **flexible por necesidad**. Entendemos que las aplicaciones reales a menudo tienen requisitos híbridos.
 
+### Arquitectura de Prioridad
+Nuestro `SecurityFilterChain` está configurado con un orden de prioridad de:
+`Ordered.HIGHEST_PRECEDENCE + 10`
 
+**¿Qué significa esto para ti?**
+Significa que CodeFortress protege tu aplicación automáticamente, pero te reserva los primeros espacios de prioridad ("VIP"). Puedes definir tus propias reglas de seguridad que se ejecutarán **antes** que las nuestras simplemente usando `@Order(Ordered.HIGHEST_PRECEDENCE)`.
+
+### Escenarios Comunes de Personalización
+
+Si necesitas excepciones a la regla general (JWT/Stateless), puedes definir tus propios Beans. Aquí tienes tres ejemplos prácticos:
+
+#### 1. Webhooks de Terceros (Stripe, GitHub, etc.)
+Los webhooks externos no envían un JWT. Si CodeFortress intercepta estas peticiones, devolverá un `401 Unauthorized`. Para evitarlo, crea una cadena prioritaria:
+
+```java
+@Bean
+@Order(Ordered.HIGHEST_PRECEDENCE) // Se ejecuta ANTES que CodeFortress
+public SecurityFilterChain webhookSecurity(HttpSecurity http) throws Exception {
+    http
+        .securityMatcher("/webhooks/**") // IMPORTANTE: Solo aplica a estas rutas
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> 
+            auth.anyRequest().permitAll() // O valida la firma HMAC aquí
+        )
+        .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    
+    return http.build();
+}
+```
+Podras hacer lo mismo con cualquier otra configuración personalizada y asi aprovechar este desarrollo.
+
+Si tu aplicación tiene una sección administrativa antigua (Thymeleaf, JSP) que requiere cookies y sesiones (Stateful), puedes excluirla de la lógica JWT de CodeFortress:
+```java
+@Bean
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public SecurityFilterChain infrastructureSecurity(HttpSecurity http) throws Exception {
+    http
+        .securityMatcher("/actuator/**", "/health/**")
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+        .csrf(AbstractHttpConfigurer::disable)
+        .requestCache(RequestCacheConfigurer::disable) // Optimización: Sin caché
+        .securityContext(AbstractHttpConfigurer::disable) // Optimización: Sin contexto
+        .sessionManagement(AbstractHttpConfigurer::disable); // Optimización: Sin sesión
+            
+    return http.build();
+}
+```
+
+```java
+⚠️ Regla de Oro
+Al crear tus propias cadenas personalizadas, recuerda siempre definir el .securityMatcher("/ruta/**").
+
+Si lo usas: Tu cadena solo actuará en esas rutas y dejará que CodeFortress proteja el resto de la aplicación.
+
+Si NO lo usas: Tu cadena capturará todas las peticiones (/**), anulando completamente la protección de CodeFortress.
+```
 ## 🛠 Arquitectura
 
 * CodeFortress sigue una Arquitectura Hexagonal (Puertos y Adaptadores) estricta:
