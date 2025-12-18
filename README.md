@@ -53,6 +53,12 @@ No impongas reglas arbitrarias. CodeFortress valida la longitud mínima por defe
 ```
 Al iniciar tu aplicación, CodeFortress creará automáticamente las tablas necesarias (cf_users, cf_roles, cf_refresh_tokens) si usas una base de datos SQL.
 
+Si desgargas del repositorio deÑ
+https://github.com/codefortress-dev/codefortress-spring-boot-starter/
+
+Entonces para que la dependencia exista en tu .m2 ejecuta en la raiz del proyecto:
+mvn clean install -DskipTests
+
 ## ⚙️ Configuración Maestra
 
 Copia y pega esto en tu application.yml. Todo es opcional, pero estos son los valores recomendados.
