@@ -21,9 +21,9 @@ codefortress:
     jwt-secret: "Q29kZUZvcnRyZXNzU2VjcmV0S2V5Rm9yRGVtb0FwcDIwMjVWZXJpZnkhIQ==" # Mínimo 256 bits
     routes:
       - pattern: "/api/public/**"
-        roles: [ "PUBLIC" ]
+        roles: [ "PUBLIC" ] ## todo lo que queda bajo esto no es un rol se usa para rutas publicas
       - pattern: "/api/private/**"
-        roles: [ "ADMIN" ]
+        roles: [ "ADMIN" ] ##Se puede continuar creando mas rutas protegidas por roles.
 
       # CAMBIO: api
     api:
